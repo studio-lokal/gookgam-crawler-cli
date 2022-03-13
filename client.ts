@@ -44,7 +44,34 @@ export class Client {
     this.electionUnitCode = ELECTION_UNIT_CODE(electionNumber);
   }
 
-  fetchMember({ memberSeq }: { memberSeq: number }) {}
+  async fetchBonAttendanceByMember(
+    { memberSeq, page }: { memberSeq: number; page: number },
+  ) {
+    const html = await fetch(
+      `https://watch.peoplepower21.org/opages/_member_bon.php?member_seq=${memberSeq}&page=${page}&rec_num=100`,
+    ).then((res) => res.text());
+    const parsedData = Parser.bonAttandences(html);
+  }
+
+  async fetchSangimAttendanceByMember(
+    { memberSeq, page }: { memberSeq: number; page: number },
+  ) {
+    const html = await fetch(
+      `https://watch.peoplepower21.org/opages/_member_sangim.php?member_seq=${memberSeq}&page=${page}&rec_num=100`,
+    ).then((res) => res.text());
+    const parsedData = Parser.sangimAttandences(html);
+  }
+
+  async fetchEuiansByMember(
+    { memberName, memberSeq }: { memberName: string; memberSeq: number },
+  ) {
+    const html = await fetch(
+      `https://watch.peoplepower21.org/index.php?mid=Euian&member_seq=775&lname=${
+        encodeURIComponent(memberName)
+      }&show=0&rec_num=50&from=m`,
+    ).then((res) => res.text());
+    const parsedData = Parser.euiansByMember(html);
+  }
 
   async fetchMembers({ page }: { page: number }): Promise<
     ({ seq: number | null; image: string } & CLIENT_SEARCH_MEMBER_DATA)[]
@@ -66,7 +93,7 @@ export class Client {
     const html = await fetch(
       `https://watch.peoplepower21.org/?mid=AssemblyMembers&mode=search&page=${page}`,
     ).then((res) => res.text());
-    const parsedData = Parser.fetchMembers(html);
+    const parsedData = Parser.members(html);
 
     return jsonResponse.data.map((d, index) => ({
       ...d,
