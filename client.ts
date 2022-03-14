@@ -50,7 +50,7 @@ export class Client {
     const html = await fetch(
       `https://watch.peoplepower21.org/opages/_member_bon.php?member_seq=${memberSeq}&page=${page}&rec_num=100`,
     ).then((res) => res.text());
-    const parsedData = Parser.bonAttandences(html);
+    const parsedData = Parser.bonAttendances(html);
   }
 
   async fetchSangimAttendanceByMember(
@@ -59,7 +59,14 @@ export class Client {
     const html = await fetch(
       `https://watch.peoplepower21.org/opages/_member_sangim.php?member_seq=${memberSeq}&page=${page}&rec_num=100`,
     ).then((res) => res.text());
-    const parsedData = Parser.sangimAttandences(html);
+    const parsedData = Parser.sangimAttendances(html);
+  }
+
+  async fetchEuian({ euianId }: { euianId: string }) {
+    const html = await fetch(
+      `https://watch.peoplepower21.org/?mid=LawInfo&bill_no=${euianId}`,
+    ).then((res) => res.text());
+    const parsedData = Parser.euian(html);
   }
 
   async fetchEuiansByMember(

@@ -3,18 +3,25 @@ import {
 } from "https://deno.land/x/deno_dom@v0.1.21-alpha/deno-dom-wasm.ts";
 
 type TextWithAnchor = { href: string; text: string };
-type BonAttandencesResponse = {
+type BonAttendancesResponse = {
   date: string;
   meeting: TextWithAnchor;
   state: string;
 }[];
 
-type SangimAttandencesResponse = {
+type SangimAttendancesResponse = {
   date: string;
   sangim: TextWithAnchor;
   meeting: TextWithAnchor;
   state: string;
 }[];
+
+type EuianResponse = {
+  state: string;
+  summary: string;
+  assemblyLink: string;
+  proposers: string[];
+};
 
 type EuiansResponse = {
   date: string;
@@ -29,13 +36,13 @@ type MembersResponse = {
 }[];
 
 class Parser {
-  bonAttandences(html: string): BonAttandencesResponse {
+  bonAttendances(html: string): BonAttendancesResponse {
     const doc: any = new DOMParser().parseFromString(html, "text/html");
     const wrappers = doc.querySelectorAll(
       "tbody > tr",
     );
 
-    const bonAttandences: BonAttandencesResponse = [];
+    const bonAttendances: BonAttendancesResponse = [];
 
     wrappers.forEach((wrapper: any) => {
       const columns = wrapper.querySelectorAll("td");
@@ -47,19 +54,19 @@ class Parser {
       };
       const state = columns[2].textContent.trim();
 
-      bonAttandences.push({ date, meeting, state });
+      bonAttendances.push({ date, meeting, state });
     });
 
-    return bonAttandences;
+    return bonAttendances;
   }
 
-  sangimAttandences(html: string): SangimAttandencesResponse {
+  sangimAttendances(html: string): SangimAttendancesResponse {
     const doc: any = new DOMParser().parseFromString(html, "text/html");
     const wrappers = doc.querySelectorAll(
       "tbody > tr",
     );
 
-    const sangimAttandences: SangimAttandencesResponse = [];
+    const sangimAttendances: SangimAttendancesResponse = [];
 
     wrappers.forEach((wrapper: any) => {
       const columns = wrapper.querySelectorAll("td");
@@ -76,10 +83,45 @@ class Parser {
       };
       const state = columns[3].textContent.trim();
 
-      sangimAttandences.push({ date, sangim, meeting, state });
+      sangimAttendances.push({ date, sangim, meeting, state });
     });
 
-    return sangimAttandences;
+    return sangimAttendances;
+  }
+
+  euian(html: string): EuianResponse {
+    const doc: any = new DOMParser().parseFromString(html, "text/html");
+    const state = doc.querySelector(
+      ".stepType01 span.on",
+    ).textContent.trim();
+
+    let summary = "";
+
+    doc.querySelector("div#summaryContentDiv").childNodes.forEach((n: any) => {
+      if (n.nodeName === "BR") {
+        summary += "\n";
+      } else {
+        summary += n.textContent.trim();
+      }
+    });
+
+    const assemblyLink = doc.querySelector("#collapseOne div.panel-body a")
+      ?.getAttribute(
+        "href",
+      ) || "";
+
+    const proposers: string[] = [];
+
+    doc.querySelector("div#collapseTwo .panel-body > .row > .col-sm-8")
+      .childNodes
+      .forEach((n: any) => {
+        const proposer = n.textContent.trim();
+        if (n.nodeName !== "BR" && proposer) {
+          proposers.push(proposer);
+        }
+      });
+
+    return { state, summary, assemblyLink, proposers };
   }
 
   euiansByMember(html: string): EuiansResponse {
