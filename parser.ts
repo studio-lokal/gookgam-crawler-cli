@@ -3,6 +3,19 @@ import {
 } from "https://deno.land/x/deno_dom@v0.1.21-alpha/deno-dom-wasm.ts";
 
 type TextWithAnchor = { href: string; text: string };
+type BonMeetingResponse = {
+  members: {
+    attended: { seq: number | null }[];
+    absenseApplied: { seq: number | null }[];
+    absenseNotApplied: { seq: number | null }[];
+  };
+  euians: {
+    euian: { id: number | null; text: string };
+    proposer: string;
+    result: string;
+  }[];
+};
+
 type BonAttendancesResponse = {
   date: string;
   meeting: TextWithAnchor;
@@ -58,6 +71,106 @@ class Parser {
     });
 
     return bonAttendances;
+  }
+
+  bonMeeting(html: string): BonMeetingResponse {
+    const doc: any = new DOMParser().parseFromString(html, "text/html");
+    const _attended = doc.querySelectorAll(
+      "tbody > tr:first-child > td:last-child > span.session_attend_name",
+    );
+
+    const attended: { seq: number | null }[] = [];
+    _attended.forEach((m: any, index: number) => {
+      if (index !== 0) {
+        try {
+          const href = m.querySelector("a").getAttribute("href");
+          const regex = /member_seq=([0-9]+)/;
+          const hrefResult = regex.exec(href.trim());
+          const seq = hrefResult && +hrefResult[1];
+          attended.push({ seq });
+        } catch (e) {
+          console.error(e);
+          console.log(index);
+        }
+      }
+    });
+
+    const _absenseApplied = doc.querySelectorAll(
+      "tbody > tr:nth-child(2) > td:last-child > span.session_attend_name",
+    );
+
+    const absenseApplied: { seq: number | null }[] = [];
+    _absenseApplied.forEach((m: any, index: number) => {
+      if (index !== 0) {
+        try {
+          const href = m.querySelector("a").getAttribute("href");
+          const regex = /member_seq=([0-9]+)/;
+          const hrefResult = regex.exec(href.trim());
+          const seq = hrefResult && +hrefResult[1];
+          absenseApplied.push({ seq });
+        } catch (e) {
+          console.error(e);
+          console.log(index);
+        }
+      }
+    });
+
+    const _absenseNotApplied = doc.querySelectorAll(
+      "tbody > tr:nth-child(3) > td:last-child > span.session_attend_name",
+    );
+
+    const absenseNotApplied: { seq: number | null }[] = [];
+    _absenseNotApplied.forEach((m: any, index: number) => {
+      if (index !== 0) {
+        try {
+          const href = m.querySelector("a").getAttribute("href");
+          const regex = /member_seq=([0-9]+)/;
+          const hrefResult = regex.exec(href.trim());
+          const seq = hrefResult && +hrefResult[1];
+          absenseNotApplied.push({ seq });
+        } catch (e) {
+          console.error(e);
+          console.log(index);
+        }
+      }
+    });
+
+    const _euians = doc.querySelectorAll(
+      "div#collapseTwo tbody > tr",
+    );
+
+    const euians: {
+      euian: { id: number | null; text: string };
+      proposer: string;
+      result: string;
+    }[] = [];
+
+    _euians.forEach((_e: any) => {
+      const _euian = _e.querySelector("td:first-child").querySelector("a");
+      const href = _euian.getAttribute("href");
+      const regex = /bill_no=([0-9]+)/;
+      const hrefResult = regex.exec(href.trim());
+      const euianId: number | null = hrefResult && +hrefResult[1];
+      euians.push({
+        euian: {
+          text: _euian.textContent.trim(),
+          id: euianId,
+        },
+        proposer: _e.querySelector("td:nth-child(2)").textContent.trim(),
+        result: _e.querySelector("td:nth-child(3)").textContent.trim(),
+      });
+    });
+
+    const bonMeeting: BonMeetingResponse = {
+      members: {
+        attended,
+        absenseApplied,
+        absenseNotApplied,
+      },
+      euians,
+    };
+
+    return bonMeeting;
   }
 
   sangimAttendances(html: string): SangimAttendancesResponse {

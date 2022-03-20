@@ -38,6 +38,15 @@ Deno.test("Parser.bonAttendance", async () => {
   assertEquals(typeof result[0].date, "string");
 });
 
+Deno.test("Parser.bonMeeting", async () => {
+  const html = await fetch(
+    "https://watch.peoplepower21.org/index.php?mid=Session&meeting_id=1121&mtext=2022-02-21%20%20%EC%A0%9C393%ED%9A%8C%2003%EC%B0%A8",
+  ).then((res) => res.text());
+
+  const result = Parser.bonMeeting(html);
+  assertEquals(typeof result.members.attended[0].seq, "number");
+});
+
 Deno.test("Parser.sangimAttendance", async () => {
   const html = await fetch(
     "https://watch.peoplepower21.org/opages/_member_sangim.php?member_seq=775&page=1&rec_num=100",
