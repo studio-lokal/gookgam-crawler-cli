@@ -4,7 +4,7 @@
   "deno.unstable": true,
   "deno.path": "/opt/homebrew/bin/deno",
   "[typescript]": {
-    "editor.defaultFormatter": "denoland.vscode-deno",
+    "editor.defaultFormatter": "esbenp.prettier-vscode",
     "editor.formatOnSave": true
   },
   "[typescriptreact]": {

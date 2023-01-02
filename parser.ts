@@ -1,6 +1,4 @@
-import {
-  DOMParser,
-} from "https://deno.land/x/deno_dom@v0.1.21-alpha/deno-dom-wasm.ts";
+import { DOMParser } from "https://deno.land/x/deno_dom@v0.1.21-alpha/deno-dom-wasm.ts";
 
 type TextWithAnchor = { href: string; text: string };
 type BonMeetingResponse = {
@@ -51,9 +49,7 @@ type MembersResponse = {
 class Parser {
   bonAttendances(html: string): BonAttendancesResponse {
     const doc: any = new DOMParser().parseFromString(html, "text/html");
-    const wrappers = doc.querySelectorAll(
-      "tbody > tr",
-    );
+    const wrappers = doc.querySelectorAll("tbody > tr");
 
     const bonAttendances: BonAttendancesResponse = [];
 
@@ -76,7 +72,7 @@ class Parser {
   bonMeeting(html: string): BonMeetingResponse {
     const doc: any = new DOMParser().parseFromString(html, "text/html");
     const _attended = doc.querySelectorAll(
-      "tbody > tr:first-child > td:last-child > span.session_attend_name",
+      "tbody > tr:first-child > td:last-child > span.session_attend_name"
     );
 
     const attended: { seq: number | null }[] = [];
@@ -96,7 +92,7 @@ class Parser {
     });
 
     const _absenseApplied = doc.querySelectorAll(
-      "tbody > tr:nth-child(2) > td:last-child > span.session_attend_name",
+      "tbody > tr:nth-child(2) > td:last-child > span.session_attend_name"
     );
 
     const absenseApplied: { seq: number | null }[] = [];
@@ -116,7 +112,7 @@ class Parser {
     });
 
     const _absenseNotApplied = doc.querySelectorAll(
-      "tbody > tr:nth-child(3) > td:last-child > span.session_attend_name",
+      "tbody > tr:nth-child(3) > td:last-child > span.session_attend_name"
     );
 
     const absenseNotApplied: { seq: number | null }[] = [];
@@ -135,9 +131,7 @@ class Parser {
       }
     });
 
-    const _euians = doc.querySelectorAll(
-      "div#collapseTwo tbody > tr",
-    );
+    const _euians = doc.querySelectorAll("div#collapseTwo tbody > tr");
 
     const euians: {
       euian: { id: number | null; text: string };
@@ -175,9 +169,7 @@ class Parser {
 
   sangimAttendances(html: string): SangimAttendancesResponse {
     const doc: any = new DOMParser().parseFromString(html, "text/html");
-    const wrappers = doc.querySelectorAll(
-      "tbody > tr",
-    );
+    const wrappers = doc.querySelectorAll("tbody > tr");
 
     const sangimAttendances: SangimAttendancesResponse = [];
 
@@ -204,9 +196,7 @@ class Parser {
 
   euian(html: string): EuianResponse {
     const doc: any = new DOMParser().parseFromString(html, "text/html");
-    const state = doc.querySelector(
-      ".stepType01 span.on",
-    ).textContent.trim();
+    const state = doc.querySelector(".stepType01 span.on").textContent.trim();
 
     let summary = "";
 
@@ -218,16 +208,16 @@ class Parser {
       }
     });
 
-    const assemblyLink = doc.querySelector("#collapseOne div.panel-body a")
-      ?.getAttribute(
-        "href",
-      ) || "";
+    const assemblyLink =
+      doc
+        .querySelector("#collapseOne div.panel-body a")
+        ?.getAttribute("href") || "";
 
     const proposers: string[] = [];
 
-    doc.querySelector("div#collapseTwo .panel-body > .row > .col-sm-8")
-      .childNodes
-      .forEach((n: any) => {
+    doc
+      .querySelector("div#collapseTwo .panel-body > .row > .col-sm-8")
+      .childNodes.forEach((n: any) => {
         const proposer = n.textContent.trim();
         if (n.nodeName !== "BR" && proposer) {
           proposers.push(proposer);
@@ -239,9 +229,7 @@ class Parser {
 
   euiansByMember(html: string): EuiansResponse {
     const doc: any = new DOMParser().parseFromString(html, "text/html");
-    const euianWrappers = doc.querySelectorAll(
-      "tbody > tr",
-    );
+    const euianWrappers = doc.querySelectorAll("tbody > tr");
 
     const euians: EuiansResponse = [];
 
@@ -269,7 +257,7 @@ class Parser {
   members(html: string): MembersResponse {
     const doc: any = new DOMParser().parseFromString(html, "text/html");
     const membersWrapper = doc.querySelectorAll(
-      "div.col-md-8 div.col-xs-6.col-sm-3 > div",
+      "div.col-md-8 div.col-xs-6.col-sm-3 > div"
     );
 
     const result: { seq: number | null; image: string }[] = [];
