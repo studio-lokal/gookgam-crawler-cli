@@ -2,7 +2,7 @@
   "deno.enable": true,
   "deno.lint": true,
   "deno.unstable": true,
-  "deno.path": "/opt/homebrew/bin/deno",
+  "deno.path": "/Users/hoony/.deno/bin/deno",
   "[typescript]": {
     "editor.defaultFormatter": "esbenp.prettier-vscode",
     "editor.formatOnSave": true

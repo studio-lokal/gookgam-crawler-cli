@@ -1,27 +1,36 @@
 import { Client } from "../client.ts";
-import { Target } from "../index.ts";
 
-const main = async (
-  target: Target,
-  options?: {
-    page?: number;
-  }
-) => {
-  switch (target) {
-    case Target.MEMBERS:
-      return crawlMembers({ electionNumber: 21, page: options?.page });
-  }
+export const euian = ({
+  electionNumber,
+  billNo,
+}: {
+  electionNumber: number;
+  billNo: string;
+}) => {
+  const client = new Client({ electionNumber });
+  return client.fetchEuian({ billNo });
 };
 
-const crawlMembers = async ({
+export const euians = ({
+  electionNumber,
+  page,
+  memberSeq,
+}: {
+  electionNumber: number;
+  page: number;
+  memberSeq: number;
+}) => {
+  const client = new Client({ electionNumber });
+  return client.fetchEuiansByMember({ page, memberSeq });
+};
+
+export const members = ({
   electionNumber,
   page,
 }: {
   electionNumber: number;
-  page;
+  page: number;
 }) => {
   const client = new Client({ electionNumber });
   return client.fetchMembers({ page });
 };
-
-export default main;

@@ -1,3 +1,4 @@
+// deno-lint-ignore-file no-explicit-any
 import { DOMParser } from "https://deno.land/x/deno_dom@v0.1.21-alpha/deno-dom-wasm.ts";
 
 type TextWithAnchor = { href: string; text: string };
@@ -27,16 +28,23 @@ type SangimAttendancesResponse = {
   state: string;
 }[];
 
+type Proposer = {
+  name: string;
+  party: string;
+  nameHanja: string;
+};
 type EuianResponse = {
+  title: string;
   state: string;
   summary: string;
   assemblyLink: string;
-  proposers: string[];
+  proposers: Proposer[];
 };
 
 type EuiansResponse = {
+  billNo: string;
   date: string;
-  euian: TextWithAnchor;
+  bill: TextWithAnchor;
   sangim: TextWithAnchor;
   state: string;
 }[];
@@ -196,7 +204,10 @@ class Parser {
 
   euian(html: string): EuianResponse {
     const doc: any = new DOMParser().parseFromString(html, "text/html");
+
     const state = doc.querySelector(".stepType01 span.on").textContent.trim();
+
+    const title: string = doc.querySelector("h1")?.textContent.trim() || "";
 
     let summary = "";
 
@@ -213,18 +224,25 @@ class Parser {
         .querySelector("#collapseOne div.panel-body a")
         ?.getAttribute("href") || "";
 
-    const proposers: string[] = [];
+    const proposers: { name: string; party: string; nameHanja: string }[] = [];
 
     doc
       .querySelector("div#collapseTwo .panel-body > .row > .col-sm-8")
       .childNodes.forEach((n: any) => {
         const proposer = n.textContent.trim();
-        if (n.nodeName !== "BR" && proposer) {
-          proposers.push(proposer);
+        if (n.nodeName !== "BR" && proposer && proposer.trim() !== "b98") {
+          const _proposer = /(.*)\((.*)\/(.*)\)(.*)/.exec(proposer);
+          if (_proposer) {
+            proposers.push({
+              name: _proposer[1],
+              party: _proposer[2],
+              nameHanja: _proposer[3],
+            });
+          }
         }
       });
 
-    return { state, summary, assemblyLink, proposers };
+    return { title, state, summary, assemblyLink, proposers };
   }
 
   euiansByMember(html: string): EuiansResponse {
@@ -237,10 +255,14 @@ class Parser {
       const columns = wrapper.querySelectorAll("td");
       const date = columns[0].textContent.trim();
       const _euian = columns[1].childNodes[0];
-      const euian: TextWithAnchor = {
-        href: _euian.getAttribute("href"),
+
+      const billHref = _euian.getAttribute("href");
+      const billNo = /bill_no=([0-9]+)/.exec(billHref.trim())?.[1] || "";
+      const bill: TextWithAnchor = {
+        href: billHref,
         text: _euian.textContent.trim(),
       };
+
       const _sangim = columns[3].childNodes[0];
       const sangim: TextWithAnchor = {
         href: _sangim.getAttribute("href"),
@@ -248,7 +270,7 @@ class Parser {
       };
       const state = columns[4].textContent.trim();
 
-      euians.push({ date, euian, sangim, state });
+      euians.push({ billNo, date, bill, sangim, state });
     });
 
     return euians;
